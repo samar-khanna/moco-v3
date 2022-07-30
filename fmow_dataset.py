@@ -411,8 +411,8 @@ def build_fmow_dataset(is_train, args) -> SatelliteDataset:
 
 class SentinelNormalize:
     def __init__(self, mean, std):
-        self.mean = mean
-        self.std = std
+        self.mean = np.array(mean)
+        self.std = np.array(std)
 
     def __call__(self, x, *args, **kwargs):
         min_value = self.mean - 2 * self.std
