@@ -48,7 +48,7 @@ model_names = ['vit_small', 'vit_base', 'vit_large', 'vit_conv_small', 'vit_conv
 parser = argparse.ArgumentParser(description='MoCo ImageNet Pre-Training')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
+parser.add_argument('-a', '--arch', metavar='ARCH', default='vit_large',
                     choices=model_names,
                     help='model architecture: ' +
                         ' | '.join(model_names) +
@@ -133,7 +133,7 @@ parser.add_argument('--optimizer', default='lars', type=str,
                     help='optimizer used (default: lars)')
 parser.add_argument('--warmup-epochs', default=10, type=int, metavar='N',
                     help='number of warmup epochs')
-parser.add_argument('--crop-min', default=0.08, type=float,
+parser.add_argument('--crop-min', default=0.2, type=float,
                     help='minimum scale for random cropping (default: 0.08)')
 
 
