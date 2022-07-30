@@ -46,8 +46,6 @@ torchvision_model_names = sorted(name for name in torchvision_models.__dict__
 model_names = ['vit_small', 'vit_base', 'vit_large', 'vit_conv_small', 'vit_conv_base'] + torchvision_model_names
 
 parser = argparse.ArgumentParser(description='MoCo ImageNet Pre-Training')
-parser.add_argument('data', metavar='DIR',
-                    help='path to dataset')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='vit_large',
                     choices=model_names,
                     help='model architecture: ' +
