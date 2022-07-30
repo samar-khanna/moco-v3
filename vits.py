@@ -51,7 +51,8 @@ class VisionTransformerMoCo(VisionTransformer):
                 self.patch_embed.proj.bias.requires_grad = False
 
     def build_2d_sincos_position_embedding(self, temperature=10000.):
-        h, w = self.patch_embed.grid_size
+        p, _ = self.patch_embed.patch_size
+        h, w = self.patch_embed.img_size[0]//p, self.patch_embed.img_size[1]//p
         grid_w = torch.arange(w, dtype=torch.float32)
         grid_h = torch.arange(h, dtype=torch.float32)
         grid_w, grid_h = torch.meshgrid(grid_w, grid_h)
