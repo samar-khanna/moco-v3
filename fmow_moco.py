@@ -96,6 +96,9 @@ parser.add_argument('--input_size', default=224, type=int,
 parser.add_argument('--patch_size', default=16, type=int,
                     help='images input size')
 
+parser.add_argument('--output_dir', default='./output_dir', type=str,
+                    help='Where to store model weights')
+
 # Dataset parameters
 parser.add_argument('--train_path', default='/atlas/u/buzkent/patchdrop/data/fMoW/train_62classes.csv', type=str,
                     help='Train .csv path')
@@ -137,6 +140,7 @@ parser.add_argument('--crop-min', default=0.2, type=float,
 
 def main():
     args = parser.parse_args()
+    os.makedirs(args.output_dir, exist_ok=True)
 
     if args.seed is not None:
         random.seed(args.seed)
@@ -304,7 +308,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 'state_dict': model.state_dict(),
                 'optimizer' : optimizer.state_dict(),
                 'scaler': scaler.state_dict(),
-            }, is_best=False, filename='checkpoint_%04d.pth.tar' % epoch)
+            }, is_best=False, filename=os.path.join(args.output_dir, 'checkpoint_%04d.pth.tar' % epoch))
 
     if args.rank == 0:
         summary_writer.close()
