@@ -300,8 +300,9 @@ def main_worker(gpu, ngpus_per_node, args):
         # train for one epoch
         train(train_loader, model, optimizer, scaler, summary_writer, epoch, args)
 
-        if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                and args.rank == 0): # only the first GPU saves checkpoint
+        if (epoch % 5 == 0 or epoch + 1 == args.epochs)\
+                and (not args.multiprocessing_distributed or (args.multiprocessing_distributed
+                and args.rank == 0)): # only the first GPU saves checkpoint
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': args.arch,
