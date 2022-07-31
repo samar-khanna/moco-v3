@@ -35,6 +35,8 @@ if __name__ == '__main__':
                     new_t[:, b1] = weight[:, i]
                     new_t[:, b2] = weight[:, i]
 
+                weight = new_t
+
             state_dict[k[len("module.base_encoder."):]] = weight
         # delete renamed or unused k
         del state_dict[k]
