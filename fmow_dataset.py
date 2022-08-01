@@ -383,23 +383,20 @@ class SentinelIndividualImageDataset(SatelliteDataset):
             SentinelNormalize(mean, std),
             transforms.ToTensor(),
             transforms.RandomResizedCrop(input_size, scale=(crop_min, 1.)),
-            transforms.RandomApply([
-                transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
-            ], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.RandomApply([GaussianBlur([.1, 2.])], p=1.0),
+            # transforms.RandomApply([
+            #     transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
+            # ], p=0.8),
+            transforms.RandomApply([transforms.GaussianBlur(1., sigma=[.1, 2.])], p=1.0),
             transforms.RandomHorizontalFlip(),
         ]
         aug2 = [
             SentinelNormalize(mean, std),
             transforms.ToTensor(),
             transforms.RandomResizedCrop(input_size, scale=(crop_min, 1.)),
-            transforms.RandomApply([
-                transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
-            ], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.1),
-            transforms.RandomApply([Solarize()], p=0.2),
+            # transforms.RandomApply([
+            #     transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
+            # ], p=0.8),
+            transforms.RandomApply([transforms.GaussianBlur(1., [.1, 2.])], p=0.1),
             transforms.RandomHorizontalFlip(),
         ]
 
