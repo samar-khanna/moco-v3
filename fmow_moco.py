@@ -110,6 +110,8 @@ parser.add_argument('--dropped_bands', type=int, nargs='+', default=None,
                     help="Which bands (0 indexed) to drop from sentinel data.")
 parser.add_argument('--grouped_bands', type=int, nargs='+', action='append',
                     default=[], help="Bands to group for moco views")
+parser.add_argument('--use_groups', type=bool, action='store_true',
+                    default=False, help="Whether or not to use channel groups as views")
 
 # moco specific configs:
 parser.add_argument('--moco-dim', default=256, type=int,
@@ -198,19 +200,21 @@ def main_worker(gpu, ngpus_per_node, args):
         torch.distributed.barrier()
 
     # Workaround because action append will add to default list
-    if len(args.grouped_bands) == 0:
-        args.grouped_bands = [[1, 7, 8, 11, 12], [2, 3, 4, 5, 6]]
-        print(f"Grouping bands {args.grouped_bands}")
-    assert len(args.grouped_bands) == 2
-    assert len(args.grouped_bands[0]) == len(args.grouped_bands[1])
+    if args.use_groups:
+        if len(args.grouped_bands) == 0:
+            args.grouped_bands = [[1, 7, 8, 11, 12], [2, 3, 4, 5, 6]]
+            print(f"Grouping bands {args.grouped_bands}")
+        assert len(args.grouped_bands) == 2
+        assert len(args.grouped_bands[0]) == len(args.grouped_bands[1])
     train_dataset = build_fmow_dataset(is_train=True, args=args)
 
     # create model
     print("=> creating model '{}'".format(args.arch))
     if args.arch.startswith('vit'):
+        in_chans = train_dataset.in_c if not args.use_groups else len(args.grouped_bands[0])
         model = moco.builder.MoCo_ViT(
             partial(vits.__dict__[args.arch], stop_grad_conv1=args.stop_grad_conv1,
-                    img_size=args.input_size, patch_size=args.patch_size, in_chans=len(args.grouped_bands[0])),
+                    img_size=args.input_size, patch_size=args.patch_size, in_chans=in_chans),
             args.moco_dim, args.moco_mlp_dim, args.moco_t)
     else:
         model = moco.builder.MoCo_ResNet(

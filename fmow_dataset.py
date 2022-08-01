@@ -13,7 +13,7 @@ from PIL import Image
 import rasterio
 from rasterio import logging
 
-from moco.loader import TwoCropsTransform
+from moco.loader import TwoCropsTransform, GaussianBlur, Solarize
 
 log = logging.getLogger()
 log.setLevel(logging.ERROR)
@@ -366,7 +366,7 @@ class SentinelIndividualImageDataset(SatelliteDataset):
         return img_as_tensor, labels
 
     @staticmethod
-    def build_train_transform(input_size, crop_min, mean, std, band_groups):
+    def build_split_group_transform(input_size, crop_min, mean, std, band_groups):
         # WARNING: Don't use self.dropped_bands with this
         transform = [
             SentinelNormalize(mean, std),
@@ -376,6 +376,34 @@ class SentinelIndividualImageDataset(SatelliteDataset):
             SentinelBandGroupSplit(band_groups)
         ]
         return transforms.Compose(transform)
+
+    @staticmethod
+    def build_augmentation_transform(input_size, crop_min, mean, std):
+        aug1 = [
+            SentinelNormalize(mean, std),
+            transforms.ToTensor(),
+            transforms.RandomResizedCrop(input_size, scale=(crop_min, 1.)),
+            transforms.RandomApply([
+                transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
+            ], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.RandomApply([GaussianBlur([.1, 2.])], p=1.0),
+            transforms.RandomHorizontalFlip(),
+        ]
+        aug2 = [
+            SentinelNormalize(mean, std),
+            transforms.ToTensor(),
+            transforms.RandomResizedCrop(input_size, scale=(crop_min, 1.)),
+            transforms.RandomApply([
+                transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
+            ], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.1),
+            transforms.RandomApply([Solarize()], p=0.2),
+            transforms.RandomHorizontalFlip(),
+        ]
+
+        return TwoCropsTransform(transforms.Compose(aug1), transforms.Compose(aug2))
 
 
 def build_fmow_dataset(is_train, args) -> SatelliteDataset:
@@ -390,9 +418,14 @@ def build_fmow_dataset(is_train, args) -> SatelliteDataset:
     elif args.dataset_type == 'sentinel':
         mean = SentinelIndividualImageDataset.mean
         std = SentinelIndividualImageDataset.std
-        transform = SentinelIndividualImageDataset.build_train_transform(
-            args.input_size, args.crop_min, mean, std, args.grouped_bands,
-        )
+        if args.use_groups:
+            transform = SentinelIndividualImageDataset.build_split_group_transform(
+                args.input_size, args.crop_min, mean, std, args.grouped_bands,
+            )
+        else:
+            transform = SentinelIndividualImageDataset.build_augmentation_transform(
+                args.input_size, args.crop_min, mean, std
+            )
         dataset = SentinelIndividualImageDataset(csv_path, transform, masked_bands=args.masked_bands,
                                                  dropped_bands=args.dropped_bands)
     elif args.dataset_type == 'rgb_temporal_stacked':
