@@ -110,7 +110,7 @@ parser.add_argument('--dropped_bands', type=int, nargs='+', default=None,
                     help="Which bands (0 indexed) to drop from sentinel data.")
 parser.add_argument('--grouped_bands', type=int, nargs='+', action='append',
                     default=[], help="Bands to group for moco views")
-parser.add_argument('--use_groups', type=bool, action='store_true',
+parser.add_argument('--use_groups', action='store_true',
                     default=False, help="Whether or not to use channel groups as views")
 
 # moco specific configs:
